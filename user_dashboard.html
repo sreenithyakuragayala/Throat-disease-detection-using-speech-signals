@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --sidebar-bg-color: #1a2b42;
+            --sidebar-link-hover: #253652;
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --transition-speed: 0.3s;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            overflow-x: hidden;
+        }
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--sidebar-bg-color) 0%, #0f1c2e 100%);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
+            transition: width var(--transition-speed);
+            z-index: 1000;
+        }
+        .sidebar h4 {
+            font-weight: bold;
+            padding: 0 20px;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: all var(--transition-speed);
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--primary-color);
+            transform: translateX(-100%);
+            transition: transform var(--transition-speed);
+        }
+        .sidebar a i {
+            margin-right: 15px;
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: var(--sidebar-link-hover);
+            color: #ffffff;
+        }
+        .sidebar a:hover::before,
+        .sidebar a.active::before {
+            transform: translateX(0);
+        }
+        .content {
+            margin-left: 260px;
+            padding: 30px;
+            flex-grow: 1;
+            transition: margin-left var(--transition-speed);
+            animation: fadeIn 0.6s ease;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            transition: all var(--transition-speed) ease;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--sidebar-bg-color) 0%, #253652 100%);
+            color: white;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            font-weight: 600;
+            padding: 18px 24px;
+            border: none;
+            position: relative;
+        }
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), #5dade2);
+        }
+        .card-body {
+            padding: 24px;
+        }
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 10px 20px;
+            transition: all var(--transition-speed) ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: -1;
+        }
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #2980b9);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .alert-info {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
+            color: #2980b9;
+        }
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
+            color: #d35400;
+        }
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .table thead th {
+            background: linear-gradient(135deg, var(--sidebar-bg-color) 0%, #253652 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+            transform: scale(1.01);
+            transition: all var(--transition-speed) ease;
+        }
+        .badge {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 12px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+        /* Stats Card Styles */
+        .stats-card {
+            border-radius: 16px;
+            overflow: hidden;
+            color: white;
+            position: relative;
+            transition: all var(--transition-speed) ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-8px);
+        }
+        .stats-card.primary {
+            background: linear-gradient(135deg, var(--primary-color), #2980b9);
+        }
+        .stats-card.success {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+        }
+        .stats-card.danger {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+        .stats-card .card-body {
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+        }
+        .stats-card .card-body h5 {
+            font-weight: 600;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        .stats-card .card-body h1 {
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+        .stats-card .card-body i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 60px;
+            opacity: 0.2;
+        }
+        /* Prediction Result Styles */
+        .prediction-result-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #ffffff, #f0f2f5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            margin-top: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        .prediction-result-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #5dade2);
+        }
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .result-header h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--sidebar-bg-color);
+        }
+        .result-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .result-badge.healthy {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--success-color);
+        }
+        .result-badge.diseased {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--danger-color);
+        }
+        .result-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        .result-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            animation: pulse 2s infinite;
+        }
+        .result-icon.healthy {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+        }
+        .result-icon.diseased {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+        .result-icon i {
+            font-size: 48px;
+            color: white;
+        }
+        .result-text {
+            flex-grow: 1;
+        }
+        .result-text h4 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--sidebar-bg-color);
+        }
+        .result-text p {
+            margin-bottom: 0;
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        .confidence-container {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 30px;
+        }
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--sidebar-bg-color);
+        }
+        .confidence-bar {
+            height: 12px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--primary-color), #5dade2);
+            transition: width 1.5s ease;
+        }
+        .audio-section {
+            width: 100%;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .audio-section h5 {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--sidebar-bg-color);
+            display: flex;
+            align-items: center;
+        }
+        .audio-section h5 i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        .audio-player-container {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .health-tips-section {
+            width: 100%;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .health-tips-section h5 {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--sidebar-bg-color);
+            display: flex;
+            align-items: center;
+        }
+        .health-tips-section h5 i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        .tips-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .tip-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+            transition: all var(--transition-speed) ease;
+        }
+        .tip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .tip-card i {
+            font-size: 24px;
+            margin-right: 15px;
+            color: var(--primary-color);
+        }
+        .tip-content h6 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--sidebar-bg-color);
+        }
+        .tip-content p {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); }
+            50% { transform: scale(1.05); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2); }
+            100% { transform: scale(1); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); }
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            .sidebar h4 {
+                font-size: 0;
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+            .sidebar h4::after {
+                content: "🩺";
+                font-size: 24px;
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .sidebar a {
+                padding: 15px 10px;
+                justify-content: center;
+            }
+            .sidebar a span {
+                display: none;
+            }
+            .sidebar a i {
+                margin-right: 0;
+            }
+            .content {
+                margin-left: 70px;
+                padding: 15px;
+            }
+            .result-visual {
+                flex-direction: column;
+            }
+            .result-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+
+        .notes-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .notes-form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h4>🩺 Voice AI</h4>
+        <a href="#dashboard" onclick="showSection('dashboard', this)">
+            <i class="fas fa-chart-line"></i>
+            <span>📈 Dashboard</span>
+        </a>
+        <a href="#voice-test" onclick="showSection('voice-test', this)">
+            <i class="fas fa-microphone"></i>
+            <span>🎤 Voice Test</span>
+        </a>
+        <a href="#health-tips" onclick="showSection('health-tips', this)">
+            <i class="fas fa-comment-medical"></i>
+            <span>🗣️ Voice Health Tips</span>
+        </a>
+        <a href="#history-log" onclick="showSection('history-log', this)">
+            <i class="fas fa-history"></i>
+            <span>📊 History Log</span>
+        </a>
+        <hr class="mx-4 my-2">
+        <a href="{{ url_for('logout') }}" class="text-danger">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>🚪 Logout</span>
+        </a>
+    </div>
+    <div class="content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for msg in messages %}
+                        <div>{{ msg }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <div id="dashboard" class="section active">
+            <h2>📈 Your Dashboard</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card stats-card primary">
+                        <div class="card-body">
+                            <h5>Total Tests</h5>
+                            <h1>{{ total_submissions }}</h1>
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card stats-card success">
+                        <div class="card-body">
+                            <h5>Healthy Results</h5>
+                            <h1>{{ healthy_count }}</h1>
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card stats-card danger">
+                        <div class="card-body">
+                            <h5>Diseased Results</h5>
+                            <h1>{{ diseased_count }}</h1>
+                            <i class="fas fa-virus"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    Your Voice Analysis
+                </div>
+                <div class="card-body d-flex justify-content-center">
+                    <div style="width: 400px; height: 400px;">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="voice-test" class="section">
+            <h2>🎤 Voice Test</h2>
+            <p class="lead">Upload a voice recording to get a health analysis.</p>
+            <div class="card mb-4">
+                <div class="card-header">
+                    Upload a .wav File
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <input type="file" name="file" class="form-control" accept=".wav" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-upload"></i> Upload & Test
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="result" class="prediction-result-container" style="display:none;">
+                <div class="result-header">
+                    <h3>Voice Analysis Result</h3>
+                    <div id="resultBadge" class="result-badge"></div>
+                </div>
+                
+                <div class="result-visual">
+                    <div id="resultIcon" class="result-icon">
+                        <i></i>
+                    </div>
+                    <div class="result-text">
+                        <h4 id="resultTitle"></h4>
+                        <p id="resultDescription"></p>
+                    </div>
+                </div>
+                
+                <div class="confidence-container">
+                    <div class="confidence-label">
+                        <span>Confidence Level</span>
+                        <span id="confidenceValue"></span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div id="confidenceFill" class="confidence-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="audio-section">
+                    <h5><i class="fas fa-music"></i> Voice Sample</h5>
+                    <div class="audio-player-container">
+                        <audio id="audioPlayer" controls style="display:none;"></audio>
+                    </div>
+                </div>
+                
+                <div class="health-tips-section">
+                    <h5><i class="fas fa-lightbulb"></i> Health Tips</h5>
+                    <div id="tipsContainer" class="tips-container">
+                        </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <a id="downloadReportLink" href="#" class="btn btn-info" style="display:none;">
+                        <i class="fas fa-file-pdf"></i> Download Report
+                    </a>
+                    <button onclick="showSection('health-tips')" class="btn btn-primary">
+                        <i class="fas fa-book-medical"></i> More Health Tips
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="health-tips" class="section">
+            <h2>🗣️ Voice Health Tips</h2>
+            {% if last_submission and last_submission.result == 'Diseased' %}
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Attention Required</h5>
+                Your last voice test was <strong>Diseased</strong>. Here are some specific tips to help your vocal cords recover:
+                <ul class="mt-2">
+                    <li><strong>Rest Your Voice:</strong> Avoid speaking, whispering, or shouting to give your vocal cords a break.</li>
+                    <li><strong>Stay Hydrated:</strong> Drink plenty of water and herbal tea to keep your throat moist.</li>
+                    <li><strong>Avoid Irritants:</strong> Steer clear of smoke, spicy foods, and alcohol.</li>
+                </ul>
+            </div>
+            {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">General Voice Care</h5>
+                    <div class="tips-container">
+                        <div class="tip-card">
+                            <i class="fas fa-tint"></i>
+                            <div class="tip-content">
+                                <h6>Stay Hydrated</h6>
+                                <p>Drink plenty of water throughout the day to keep your vocal cords moist.</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <i class="fas fa-volume-down"></i>
+                            <div class="tip-content">
+                                <h6>Avoid Strain</h6>
+                                <p>Avoid screaming, shouting, or straining your voice.</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <i class="fas fa-bed"></i>
+                            <div class="tip-content">
+                                <h6>Rest Your Voice</h6>
+                                <p>Take breaks from talking, especially if you have a cold.</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <i class="fas fa-smoking-ban"></i>
+                            <div class="tip-content">
+                                <h6>Avoid Irritants</h6>
+                                <p>Avoid smoking and excessive alcohol consumption.</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <i class="fas fa-wind"></i>
+                            <div class="tip-content">
+                                <h6>Use Humidifier</h6>
+                                <p>Use a humidifier in dry environments to keep your vocal cords moist.</p>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <i class="fas fa-apple-alt"></i>
+                            <div class="tip-content">
+                                <h6>Healthy Diet</h6>
+                                <p>Eat foods rich in vitamins A, C, and E for vocal health.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    Warning Signs of Voice Problems
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="alert alert-danger">
+                                <h5><i class="fas fa-exclamation-circle me-2"></i>When to Seek Medical Help</h5>
+                                <ul>
+                                    <li>Hoarseness lasting more than 2 weeks</li>
+                                    <li>Loss of voice or vocal fatigue</li>
+                                    <li>Pain when speaking or swallowing</li>
+                                    <li>Difficulty breathing</li>
+                                    <li>Persistent coughing or throat clearing</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-stethoscope me-2"></i>Professional Help</h5>
+                                <p>If you experience any of these symptoms, consider consulting with:</p>
+                                <ul>
+                                    <li>ENT (Ear, Nose, and Throat) specialist</li>
+                                    <li>Speech-language pathologist</li>
+                                    <li>Vocal coach or therapist</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="history-log" class="section">
+            <h2>📊 History Log</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Result</th>
+                            <th>Confidence</th>
+                            <th>Listen</th>
+                            <th>Report</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in submissions %}
+                        <tr id="row-{{ sub.id }}">
+                            <td>{{ sub.created_at }}</td>
+                            <td>
+                                {% if sub.result == 'Healthy' %}
+                                <span class="badge bg-success">Healthy</span>
+                                {% else %}
+                                <span class="badge bg-danger">Diseased</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ "%.2f"|format(sub.confidence * 100) if sub.confidence else "-" }}%</td>
+                            <td>
+                                <audio controls>
+                                    <source src="{{ url_for('serve_uploaded_file', filename=sub.file_path.split('/')[-1]) }}" type="audio/wav">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('download_user_report', sub_id=sub.id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-download"></i> PDF
+                                </a>
+                            </td>
+                            <td>
+                                <div class="notes-container">
+                                    <span class="notes-text" id="notes-text-{{ sub.id }}" onclick="toggleNotesForm('{{ sub.id }}')">{{ sub.user_notes|default('Click to add notes...', true) }}</span>
+                                    <form id="notes-form-{{ sub.id }}" class="notes-form" data-sub-id="{{ sub.id }}">
+                                        <div class="input-group mt-2">
+                                            <textarea name="notes" class="form-control" rows="2">{{ sub.user_notes|default('') }}</textarea>
+                                            <button type="submit" class="btn btn-sm btn-secondary ms-1">Save</button>
+                                            {% if sub.user_notes %}
+                                                <button type="button" class="btn btn-sm btn-danger ms-1" onclick="deleteNotes('{{ sub.id }}')">Delete</button>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-sm btn-secondary ms-1" onclick="toggleNotesForm('{{ sub.id }}')">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </td>
+                            <td>
+                                <form class="delete-form" data-sub-id="{{ sub.id }}" action="{{ url_for('delete_user_submission', sub_id=sub.id) }}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const healthData = {
+        healthy: {
+            title: "Healthy Voice",
+            description: "Your voice shows no signs of vocal disorders",
+            icon: "fas fa-check",
+            tips: [
+                { icon: "fas fa-tint", title: "Stay Hydrated", text: "Drink at least 8 glasses of water daily to keep your vocal cords hydrated." },
+                { icon: "fas fa-volume-down", title: "Avoid Strain", text: "Avoid shouting, whispering, or straining your voice." },
+                { icon: "fas fa-bed", title: "Get Rest", text: "Ensure you get 7-9 hours of quality sleep for vocal recovery." },
+                { icon: "fas fa-apple-alt", title: "Healthy Diet", text: "Eat foods rich in vitamins A, C, and E for vocal health." }
+            ]
+        },
+        diseased: {
+            title: "Voice Disorder Detected",
+            description: "Your voice shows signs of potential vocal issues",
+            icon: "fas fa-times",
+            tips: [
+                { icon: "fas fa-user-md", title: "See a Specialist", text: "Consult with an ENT specialist or speech-language pathologist." },
+                { icon: "fas fa-volume-mute", title: "Voice Rest", text: "Rest your voice as much as possible and avoid whispering." },
+                { icon: "fas fa-tint-slash", title: "Avoid Irritants", text: "Avoid caffeine, alcohol, and smoking which can dehydrate vocal cords." },
+                { icon: "fas fa-thermometer-half", title: "Use Humidifier", text: "Use a humidifier to maintain optimal humidity for your vocal cords." }
+            ]
+        }
+    };
+
+    function showSection(sectionId, element) {
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.classList.remove('active');
+        });
+        if (element) {
+            element.classList.add('active');
+        }
+        
+        const activeSection = document.getElementById(sectionId);
+        activeSection.style.animation = 'none';
+        setTimeout(() => {
+            activeSection.style.animation = 'fadeIn 0.6s ease';
+        }, 10);
+    }
+    
+    function toggleNotesForm(subId) {
+        const notesText = document.getElementById(`notes-text-${subId}`);
+        const notesForm = document.getElementById(`notes-form-${subId}`);
+        notesText.style.display = notesForm.style.display === 'none' ? 'none' : 'block';
+        notesForm.style.display = notesForm.style.display === 'none' ? 'block' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        function activateSidebarLink() {
+            const anchor = window.location.hash.substring(1); 
+            if (anchor) {
+                const targetLink = document.querySelector(`.sidebar a[href="#${anchor}"]`);
+                if (targetLink) {
+                    showSection(anchor, targetLink);
+                    return;
+                }
+            }
+            showSection('dashboard', document.querySelector(`.sidebar a[href="#dashboard"]`));
+        }
+        activateSidebarLink();
+        
+        // Chart.js for the User Dashboard
+        const healthy_count = {{ healthy_count }};
+        const diseased_count = {{ diseased_count }};
+        
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        const predictionChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Healthy', 'Diseased'],
+                datasets: [{
+                    label: 'Prediction Distribution',
+                    data: [healthy_count, diseased_count],
+                    backgroundColor: [
+                        'var(--success-color)',
+                        'var(--danger-color)'
+                    ],
+                    borderColor: [
+                        '#ffffff',
+                        '#ffffff'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Your Voice Health Analysis'
+                    }
+                }
+            }
+        });
+        
+        // File Upload Logic
+        const uploadForm = document.getElementById('uploadForm');
+        const resultDiv = document.getElementById('result');
+        const resultBadge = document.getElementById('resultBadge');
+        const resultIcon = document.getElementById('resultIcon');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultDescription = document.getElementById('resultDescription');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const confidenceFill = document.getElementById('confidenceFill');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const tipsContainer = document.getElementById('tipsContainer');
+        const downloadReportLink = document.getElementById('downloadReportLink');
+        
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(uploadForm);
+            
+            try {
+                const response = await fetch('/user_predict_voice', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const healthStatus = data.result_class === 'Healthy' ? 'healthy' : 'diseased';
+                    const healthInfo = healthData[healthStatus];
+                    
+                    resultBadge.textContent = data.result_class;
+                    resultBadge.className = `result-badge ${healthStatus}`;
+                    
+                    resultIcon.className = `result-icon ${healthStatus}`;
+                    resultIcon.querySelector('i').className = healthInfo.icon;
+                    
+                    resultTitle.textContent = healthInfo.title;
+                    resultDescription.textContent = healthInfo.description;
+                    
+                    confidenceValue.textContent = data.confidence + '%';
+                    
+                    tipsContainer.innerHTML = '';
+                    healthInfo.tips.forEach(tip => {
+                        const tipCard = document.createElement('div');
+                        tipCard.className = 'tip-card';
+                        tipCard.innerHTML = `
+                            <i class="${tip.icon}"></i>
+                            <div class="tip-content">
+                                <h6>${tip.title}</h6>
+                                <p>${tip.text}</p>
+                            </div>
+                        `;
+                        tipsContainer.appendChild(tipCard);
+                    });
+                    
+                    resultDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        confidenceFill.style.width = data.confidence + '%';
+                    }, 300);
+                    
+                    const fileInput = uploadForm.querySelector('input[type="file"]');
+                    const audioUrl = URL.createObjectURL(fileInput.files[0]);
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.style.display = 'block';
+                    
+                    downloadReportLink.href = `/download_user_report/${data.submission_id}`;
+                    downloadReportLink.style.display = 'inline-block';
+                    
+                    resultDiv.style.animation = 'pulse 0.6s ease';
+                    setTimeout(() => {
+                        resultDiv.style.animation = '';
+                    }, 600);
+                } else {
+                    resultBadge.textContent = 'Error';
+                    resultBadge.className = 'result-badge';
+                    resultBadge.style.backgroundColor = 'rgba(243, 156, 18, 0.15)';
+                    resultBadge.style.color = 'var(--warning-color)';
+                    
+                    resultIcon.className = 'result-icon';
+                    resultIcon.style.backgroundColor = 'var(--warning-color)';
+                    resultIcon.querySelector('i').className = 'fas fa-exclamation';
+                    
+                    resultTitle.textContent = 'Error';
+                    resultDescription.textContent = 'An error occurred while processing your voice sample.';
+                    
+                    confidenceValue.textContent = '0%';
+                    
+                    tipsContainer.innerHTML = `
+                        <div class="tip-card">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div class="tip-content">
+                                <h6>Try Again</h6>
+                                <p>Please check your connection and try again.</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    resultDiv.style.display = 'block';
+                    console.error('Server error:', data.error);
+                }
+            } catch (error) {
+                resultBadge.textContent = 'Network Error';
+                resultBadge.className = 'result-badge';
+                resultBadge.style.backgroundColor = 'rgba(243, 156, 18, 0.15)';
+                resultBadge.style.color = 'var(--warning-color)';
+                
+                resultIcon.className = 'result-icon';
+                resultIcon.style.backgroundColor = 'var(--warning-color)';
+                resultIcon.querySelector('i').className = 'fas fa-wifi';
+                
+                resultTitle.textContent = 'Connection Issue';
+                resultDescription.textContent = 'A network error occurred. Please check your connection.';
+                
+                confidenceValue.textContent = '0%';
+                
+                tipsContainer.innerHTML = `
+                    <div class="tip-card">
+                        <i class="fas fa-wifi"></i>
+                        <div class="tip-content">
+                            <h6>Connection Issue</h6>
+                            <p>Please check your internet connection and try again.</p>
+                        </div>
+                    </div>
+                `;
+                
+                resultDiv.style.display = 'block';
+                console.error('Network or fetch error:', error);
+            }
+        });
+
+        // AJAX for Notes and Submission Deletion
+        document.querySelectorAll('.notes-form').forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const subId = form.dataset.subId;
+                const notes = form.querySelector('textarea').value;
+                const response = await fetch(`/user/update_notes/${subId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `notes=${encodeURIComponent(notes)}`
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById(`notes-text-${subId}`).innerText = notes || 'Click to add notes...';
+                    toggleNotesForm(subId);
+                    alert(data.message);
+                } else {
+                    alert('Error updating notes.');
+                }
+            });
+        });
+
+        document.querySelectorAll('.delete-form').forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to delete this entire submission? This action cannot be undone.')) {
+                    const subId = form.dataset.subId;
+                    const response = await fetch(`/user/delete_submission/${subId}`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById(`row-${subId}`).remove();
+                        alert(data.message);
+                    } else {
+                        alert('Error deleting submission.');
+                    }
+                }
+            });
+        });
+
+        window.deleteNotes = async function(subId) {
+            if (confirm('Are you sure you want to delete these notes?')) {
+                const response = await fetch(`/user/delete_notes/${subId}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById(`notes-text-${subId}`).innerText = 'Click to add notes...';
+                    toggleNotesForm(subId);
+                    alert(data.message);
+                } else {
+                    alert('Error deleting notes.');
+                }
+            }
+        };
+    });
+</script>
+</body>
+</html>

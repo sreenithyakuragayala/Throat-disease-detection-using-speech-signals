@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #343a40;
+            --secondary-color: #495057;
+            --accent-color: #0d6efd;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --transition-speed: 0.3s;
+        }
+        * {
+            transition: all var(--transition-speed) ease;
+        }
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--dark-color) 100%);
+            color: white;
+            padding-top: 20px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all var(--transition-speed) ease;
+        }
+        .sidebar h4 {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInDown 0.8s ease;
+        }
+        .sidebar a {
+            display: block;
+            padding: 14px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all var(--transition-speed) ease;
+        }
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: var(--accent-color);
+            z-index: -1;
+            transition: width var(--transition-speed) ease;
+        }
+        .sidebar a:hover {
+            color: white;
+            padding-left: 30px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .sidebar a:hover::before {
+            width: 100%;
+        }
+        .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--accent-color);
+        }
+        .content {
+            margin-left: 260px;
+            padding: 25px;
+            flex-grow: 1;
+            animation: fadeIn 0.6s ease;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+        .section.active {
+            display: block;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            font-weight: 600;
+            border-bottom: none;
+            padding: 15px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), var(--info-color));
+        }
+        .btn {
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: -1;
+        }
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, var(--accent-color), #0b5ed7);
+            border: none;
+        }
+        .btn-success {
+            background: linear-gradient(45deg, var(--success-color), #157347);
+            border: none;
+        }
+        .btn-danger {
+            background: linear-gradient(45deg, var(--danger-color), #bb2d3b);
+            border: none;
+        }
+        .btn-warning {
+            background: linear-gradient(45deg, var(--warning-color), #ffca2c);
+            border: none;
+        }
+        .btn-info {
+            background: linear-gradient(45deg, var(--info-color), #31d2f2);
+            border: none;
+        }
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .table thead th {
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+            transform: scale(1.01);
+        }
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .alert-info {
+            background: linear-gradient(45deg, rgba(13, 202, 240, 0.1), rgba(32, 201, 151, 0.1));
+            color: var(--info-color);
+        }
+        .alert-warning {
+            background: linear-gradient(45deg, rgba(255, 193, 7, 0.1), rgba(255, 145, 0, 0.1));
+            color: var(--warning-color);
+        }
+        audio {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            transition: all var(--transition-speed) ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: 8px;
+        }
+        /* Enhanced Prediction Results Styles */
+        .prediction-result-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #ffffff, #f0f2f5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            margin-top: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        .prediction-result-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent-color), var(--info-color));
+        }
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .result-header h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .result-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .result-badge.healthy {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: var(--success-color);
+        }
+        .result-badge.diseased {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: var(--danger-color);
+        }
+        .confidence-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 30px;
+        }
+        .confidence-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: conic-gradient(
+                var(--info-color) 0%,
+                var(--accent-color) var(--confidence-percent),
+                #e9ecef var(--confidence-percent),
+                #e9ecef 100%
+            );
+        }
+        .confidence-circle::before {
+            content: '';
+            position: absolute;
+            width: 85%;
+            height: 85%;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .confidence-value {
+            position: relative;
+            z-index: 1;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .confidence-label {
+            font-size: 14px;
+            color: var(--secondary-color);
+            margin-top: 5px;
+        }
+        .audio-section {
+            width: 100%;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .audio-section h5 {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        .audio-section h5 i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+        .audio-player-container {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .health-tips-section {
+            width: 100%;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .health-tips-section h5 {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        .health-tips-section h5 i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+        .tips-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .tip-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .tip-card i {
+            font-size: 24px;
+            margin-right: 15px;
+            color: var(--accent-color);
+        }
+        .tip-content h6 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        .tip-content p {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+        .result-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+        }
+        .result-icon.healthy {
+            background-color: var(--success-color);
+        }
+        .result-icon.diseased {
+            background-color: var(--danger-color);
+        }
+        .result-icon i {
+            font-size: 40px;
+            color: white;
+        }
+        .result-text h4 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .result-text p {
+            margin-bottom: 0;
+            color: var(--secondary-color);
+        }
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar h4 {
+                font-size: 0;
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+            
+            .sidebar h4::after {
+                content: "⚙️";
+                font-size: 24px;
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .sidebar a {
+                padding: 15px 10px;
+                text-align: center;
+            }
+            
+            .sidebar a span {
+                display: none;
+            }
+            
+            .content {
+                margin-left: 70px;
+            }
+            
+            .confidence-container {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .confidence-value {
+                font-size: 24px;
+            }
+            
+            .result-visual {
+                flex-direction: column;
+            }
+            
+            .result-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h4>⚙️ Admin Panel</h4>
+        <a href="#" onclick="showSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i> <span>📊 Main Dashboard</span></a>
+        <a href="#" onclick="showSection('metrics-dashboard')"><i class="fas fa-chart-line"></i> <span>📈 Model Metrics</span></a>
+        <a href="#" onclick="showSection('voice-test')"><i class="fas fa-microphone"></i> <span>🎤 Voice Test</span></a>
+        <a href="#" onclick="showSection('health-tips')"><i class="fas fa-comment-medical"></i> <span>🗣️ Voice Health Tips</span></a>
+        <a href="#" onclick="showSection('submissions')"><i class="fas fa-file-alt"></i> <span>📝 User Submissions</span></a>
+        <a href="#" onclick="showSection('training')"><i class="fas fa-upload"></i> <span>📥 Upload Training Data</span></a>
+        <a href="#" onclick="showSection('users')"><i class="fas fa-users"></i> <span>👥 Manage Users</span></a>
+        <hr style="border-color: rgba(255,255,255,0.1);">
+        <a href="{{ url_for('logout') }}" class="text-danger"><i class="fas fa-sign-out-alt"></i> <span>🚪 Logout</span></a>
+    </div>
+    <div class="content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for msg in messages %}
+                        <div>{{ msg }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <div id="dashboard" class="section active">
+            <h2 class="mb-4">📊 Overview Dashboard</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Registered Users</h5>
+                            <h1 class="display-4">{{ total_users }}</h1>
+                            <div class="mt-2">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Healthy Predictions</h5>
+                            <h1 class="display-4">{{ healthy_count }}</h1>
+                            <div class="mt-2">
+                                <i class="fas fa-heartbeat fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center bg-danger text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Diseased Predictions</h5>
+                            <h1 class="display-4">{{ diseased_count }}</h1>
+                            <div class="mt-2">
+                                <i class="fas fa-virus fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Prediction Analysis</h5>
+                </div>
+                <div class="card-body d-flex justify-content-center">
+                    <div style="width: 400px; height: 400px;">
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="metrics-dashboard" class="section">
+            <h2 class="mb-4">📈 Model Performance Metrics</h2>
+            {% if metrics %}
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Overall Accuracy</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <h1 class="display-4">{{ "%.2f"|format(metrics.accuracy * 100) }}%</h1>
+                            <div class="progress mt-3" style="height: 10px;">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ "%.2f"|format(metrics.accuracy * 100) }}%;" aria-valuenow="{{ "%.2f"|format(metrics.accuracy * 100) }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Confusion Matrix</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered text-center">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Predicted Healthy</th>
+                                        <th>Predicted Diseased</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Actual Healthy</th>
+                                        <td>{{ metrics.confusion_matrix[0][0] }}</td>
+                                        <td>{{ metrics.confusion_matrix[0][1] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Actual Diseased</th>
+                                        <td>{{ metrics.confusion_matrix[1][0] }}</td>
+                                        <td>{{ metrics.confusion_matrix[1][1] }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Healthy Voices Metrics</h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Precision:</strong>
+                                <span class="badge bg-success rounded-pill">{{ "%.2f"|format(metrics.healthy_voices.precision) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Recall:</strong>
+                                <span class="badge bg-success rounded-pill">{{ "%.2f"|format(metrics.healthy_voices.recall) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>F1-Score:</strong>
+                                <span class="badge bg-success rounded-pill">{{ "%.2f"|format(metrics.healthy_voices["f1-score"]) }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Diseased Voices Metrics</h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Precision:</strong>
+                                <span class="badge bg-danger rounded-pill">{{ "%.2f"|format(metrics.diseased_voices.precision) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>Recall:</strong>
+                                <span class="badge bg-danger rounded-pill">{{ "%.2f"|format(metrics.diseased_voices.recall) }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>F1-Score:</strong>
+                                <span class="badge bg-danger rounded-pill">{{ "%.2f"|format(metrics.diseased_voices["f1-score"]) }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Model metrics not found. Please train the model by running 'train_model.py' first.
+            </div>
+            {% endif %}
+        </div>
+        
+        <div id="voice-test" class="section">
+            <h2 class="mb-4">🎤 Upload Voice for Testing</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form id="voiceForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Upload a .wav file:</label>
+                            <div class="input-group">
+                                <input type="file" name="file" class="form-control" accept=".wav" required>
+                                <button class="btn btn-primary" type="submit" id="submitBtn">
+                                    <span id="btnText">Test Voice</span>
+                                    <span id="btnSpinner" class="loading-spinner" style="display: none;"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div id="result" class="mt-4" style="display:none;">
+                        <div class="prediction-result-container">
+                            <div class="result-header">
+                                <h3>Voice Analysis Result</h3>
+                                <div id="resultBadge" class="result-badge"></div>
+                            </div>
+                            
+                            <div class="result-visual">
+                                <div id="resultIcon" class="result-icon">
+                                    <i></i>
+                                </div>
+                                <div class="result-text">
+                                    <h4 id="resultTitle"></h4>
+                                    <p id="resultDescription"></p>
+                                </div>
+                            </div>
+                            
+                            <div class="confidence-container">
+                                <div id="confidenceCircle" class="confidence-circle">
+                                    <div class="text-center">
+                                        <div id="confidenceValue" class="confidence-value"></div>
+                                        <div class="confidence-label">Confidence</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="audio-section">
+                                <h5><i class="fas fa-music"></i> Voice Sample</h5>
+                                <div class="audio-player-container">
+                                    <audio id="audioPlayer" controls style="display:none;"></audio>
+                                </div>
+                            </div>
+                            
+                            <div class="health-tips-section">
+                                <h5><i class="fas fa-lightbulb"></i> Health Tips</h5>
+                                <div id="tipsContainer" class="tips-container">
+                                    <!-- Tips will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="health-tips" class="section">
+            <h2 class="mb-4">🗣️ Voice Health Tips</h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Maintaining Healthy Voice</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <i class="fas fa-tint text-primary me-2"></i>
+                                    Stay hydrated. Drink plenty of water throughout the day.
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-volume-down text-warning me-2"></i>
+                                    Avoid screaming, shouting, or straining your voice.
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-bed text-info me-2"></i>
+                                    Rest your voice. Take breaks from talking, especially if you have a cold.
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-smoking-ban text-danger me-2"></i>
+                                    Avoid smoking and excessive alcohol consumption.
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-wind text-success me-2"></i>
+                                    Use a humidifier in dry environments to keep your vocal cords moist.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Warning Signs of Voice Problems</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <i class="fas fa-microphone-alt text-danger me-2"></i>
+                                    Hoarseness or voice changes lasting more than 2 weeks
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-volume-up text-warning me-2"></i>
+                                    Loss of voice or vocal fatigue
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-pain text-danger me-2"></i>
+                                    Pain when speaking or swallowing
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-lungs text-info me-2"></i>
+                                    Difficulty breathing or shortness of breath
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-user-md text-primary me-2"></i>
+                                    Persistent coughing or throat clearing
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-stethoscope me-2"></i>When to Seek Medical Help</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 text-center mb-3">
+                            <div class="result-icon healthy" style="width: 120px; height: 120px; margin: 0 auto;">
+                                <i class="fas fa-check" style="font-size: 60px;"></i>
+                            </div>
+                            <h5 class="mt-3">Healthy Voice</h5>
+                            <p>Clear, strong voice with no pain or discomfort</p>
+                        </div>
+                        <div class="col-md-6 text-center mb-3">
+                            <div class="result-icon diseased" style="width: 120px; height: 120px; margin: 0 auto;">
+                                <i class="fas fa-times" style="font-size: 60px;"></i>
+                            </div>
+                            <h5 class="mt-3">Seek Medical Help</h5>
+                            <p>Persistent problems, pain, breathing issues</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="submissions" class="section">
+            <h2 class="mb-4">📝 User Submissions (History Log)</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>File</th>
+                                    <th>Result</th>
+                                    <th>Confidence</th>
+                                    <th>Admin Override</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in submissions %}
+                                <tr>
+                                    <td>{{ sub.id }}</td>
+                                    <td>{{ sub.username if sub.username else "N/A" }}</td>
+                                    <td>
+                                        <audio controls>
+                                            <source src="{{ '/' + sub.file_path }}" type="audio/wav">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </td>
+                                    <td>
+                                        {% if sub.result == "Healthy" %}
+                                            <span class="badge bg-success">{{ sub.result }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ sub.result }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.2f"|format(sub.confidence) if sub.confidence else "-" }}</td>
+                                    <td>
+                                        {% if sub.admin_override %}
+                                            {% if sub.admin_override == "Healthy" %}
+                                                <span class="badge bg-success">{{ sub.admin_override }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ sub.admin_override }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span>-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ sub.created_at }}</td>
+                                    <td>
+                                        <div class="btn-group-vertical" role="group">
+                                            <form action="{{ url_for('admin_override', sub_id=sub.id) }}" method="post" style="display:inline;">
+                                                <input type="hidden" name="override" value="Healthy">
+                                                <button class="btn btn-sm btn-success mb-1 w-100">
+                                                    <i class="fas fa-check me-1"></i> Healthy
+                                                </button>
+                                            </form>
+                                            <form action="{{ url_for('admin_override', sub_id=sub.id) }}" method="post" style="display:inline;">
+                                                <input type="hidden" name="override" value="Diseased">
+                                                <button class="btn btn-sm btn-warning mb-1 w-100">
+                                                    <i class="fas fa-times me-1"></i> Diseased
+                                                </button>
+                                            </form>
+<a href="{{ url_for('admin_download_report', sub_id=sub.id) }}" class="btn btn-sm btn-info mb-1 w-100">
+    <i class="fas fa-file-download me-2"></i> Report
+</a>
+                                            <form action="{{ url_for('delete_admin_submission', sub_id=sub.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this history entry?');">
+                                                <button type="submit" class="btn btn-sm btn-danger mb-1 w-100">
+                                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="training" class="section">
+            <h2 class="mb-4">📥 Upload New Training Data</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form action="{{ url_for('admin_upload_data') }}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Select Category:</label>
+                            <select name="category" class="form-select" required>
+                                {% for cls in classes %}
+                                <option value="{{ cls }}">{{ cls.replace('_voices','').capitalize() }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload .wav file:</label>
+                            <input type="file" name="file" class="form-control" accept=".wav" required>
+                        </div>
+                        <button class="btn btn-success">
+                            <i class="fas fa-upload me-2"></i> Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div id="users" class="section">
+            <h2 class="mb-4">👥 Manage Users</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in users %}
+                                <tr>
+                                    <td>{{ u.id }}</td>
+                                    <td>{{ u.username }}</td>
+                                    <td>{{ u.email }}</td>
+                                    <td>
+                                        {% if u.status == 'Active' %}
+                                            <span class="badge bg-success">{{ u.status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ u.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-vertical" role="group">
+                                            <form action="{{ url_for('block_user', user_id=u.id) }}" method="post" style="display:inline;">
+                                                <button class="btn btn-sm btn-danger mb-1 w-100">
+                                                    <i class="fas fa-ban me-1"></i> Block
+                                                </button>
+                                            </form>
+                                            <form action="{{ url_for('unblock_user', user_id=u.id) }}" method="post" style="display:inline;">
+                                                <button class="btn btn-sm btn-success mb-1 w-100">
+                                                    <i class="fas fa-check-circle me-1"></i> Unblock
+                                                </button>
+                                            </form>
+                                            <form action="{{ url_for('delete_user', user_id=u.id) }}" method="post" style="display:inline;">
+                                                <button class="btn btn-sm btn-secondary mb-1 w-100">
+                                                    <i class="fas fa-user-times me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                            
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Health data for predictions
+    const healthData = {
+        healthy: {
+            title: "Healthy Voice",
+            description: "Your voice shows no signs of vocal disorders",
+            icon: "fas fa-check",
+            tips: [
+                { icon: "fas fa-tint", title: "Stay Hydrated", text: "Drink at least 8 glasses of water daily to keep your vocal cords hydrated." },
+                { icon: "fas fa-volume-down", title: "Avoid Strain", text: "Avoid shouting, whispering, or straining your voice." },
+                { icon: "fas fa-bed", title: "Get Rest", text: "Ensure you get 7-9 hours of quality sleep for vocal recovery." },
+                { icon: "fas fa-apple-alt", title: "Healthy Diet", text: "Eat foods rich in vitamins A, C, and E for vocal health." }
+            ]
+        },
+        diseased: {
+            title: "Voice Disorder Detected",
+            description: "Your voice shows signs of potential vocal issues",
+            icon: "fas fa-times",
+            tips: [
+                { icon: "fas fa-user-md", title: "See a Specialist", text: "Consult with an ENT specialist or speech-language pathologist." },
+                { icon: "fas fa-volume-mute", title: "Voice Rest", text: "Rest your voice as much as possible and avoid whispering." },
+                { icon: "fas fa-tint-slash", title: "Avoid Irritants", text: "Avoid caffeine, alcohol, and smoking which can dehydrate vocal cords." },
+                { icon: "fas fa-thermometer-half", title: "Use Humidifier", text: "Use a humidifier to maintain optimal humidity for your vocal cords." }
+            ]
+        }
+    };
+
+    // Function to switch between sections
+    function showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show the selected section
+        document.getElementById(sectionId).classList.add('active');
+        
+        // Update active nav link
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.classList.remove('active');
+        });
+        document.querySelector(`.sidebar a[onclick="showSection('${sectionId}')"]`).classList.add('active');
+        
+        // Add animation to the section
+        const activeSection = document.getElementById(sectionId);
+        activeSection.style.animation = 'none';
+        setTimeout(() => {
+            activeSection.style.animation = 'fadeIn 0.6s ease';
+        }, 10);
+    }
+    
+    // Initialize dashboard on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        showSection('dashboard');
+        
+        // Initialize chart
+        const healthy_count = {{ healthy_count }};
+        const diseased_count = {{ diseased_count }};
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        const predictionChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Healthy', 'Diseased'],
+                datasets: [{
+                    label: 'Prediction Distribution',
+                    data: [healthy_count, diseased_count],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 255, 255, 1)',
+                        'rgba(255, 255, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Voice Health Prediction Breakdown'
+                    }
+                },
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
+                }
+            }
+        });
+    });
+    
+    // Voice testing logic
+    const voiceForm = document.getElementById('voiceForm');
+    const resultDiv = document.getElementById('result');
+    const resultBadge = document.getElementById('resultBadge');
+    const resultIcon = document.getElementById('resultIcon');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultDescription = document.getElementById('resultDescription');
+    const confidenceCircle = document.getElementById('confidenceCircle');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const tipsContainer = document.getElementById('tipsContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+    
+    voiceForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        btnText.textContent = 'Testing...';
+        btnSpinner.style.display = 'inline-block';
+        
+        const fileInput = voiceForm.querySelector('input[type="file"]');
+        if (fileInput.files.length === 0) {
+            alert('Please select a file to upload.');
+            resetButton();
+            return;
+        }
+        
+        const formData = new FormData(voiceForm);
+        
+        try {
+            const response = await fetch('/admin_test_voice', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Determine health status
+                const healthStatus = data.result_class === 'Healthy' ? 'healthy' : 'diseased';
+                const healthInfo = healthData[healthStatus];
+                
+                // Update result badge
+                resultBadge.textContent = data.result_class;
+                resultBadge.className = `result-badge ${healthStatus}`;
+                
+                // Update result icon
+                resultIcon.className = `result-icon ${healthStatus}`;
+                resultIcon.querySelector('i').className = healthInfo.icon;
+                
+                // Update result text
+                resultTitle.textContent = healthInfo.title;
+                resultDescription.textContent = healthInfo.description;
+                
+                // Update confidence circle
+                confidenceValue.textContent = data.confidence + '%';
+                confidenceCircle.style.setProperty('--confidence-percent', data.confidence + '%');
+                
+                // Update tips
+                tipsContainer.innerHTML = '';
+                healthInfo.tips.forEach(tip => {
+                    const tipCard = document.createElement('div');
+                    tipCard.className = 'tip-card';
+                    tipCard.innerHTML = `
+                        <i class="${tip.icon}"></i>
+                        <div class="tip-content">
+                            <h6>${tip.title}</h6>
+                            <p>${tip.text}</p>
+                        </div>
+                    `;
+                    tipsContainer.appendChild(tipCard);
+                });
+                
+                resultDiv.style.display = 'block';
+                
+                // Set up audio player
+                const audioUrl = URL.createObjectURL(fileInput.files[0]);
+                audioPlayer.src = audioUrl;
+                audioPlayer.style.display = 'block';
+                
+                // Animate result
+                resultDiv.style.animation = 'pulse 0.6s ease';
+                setTimeout(() => {
+                    resultDiv.style.animation = '';
+                }, 600);
+            } else {
+                const errorData = await response.json();
+                resultBadge.textContent = 'Error';
+                resultBadge.className = 'result-badge';
+                resultBadge.style.backgroundColor = 'rgba(255, 193, 7, 0.15)';
+                resultBadge.style.color = 'var(--warning-color)';
+                
+                resultIcon.className = 'result-icon';
+                resultIcon.style.backgroundColor = 'var(--warning-color)';
+                resultIcon.querySelector('i').className = 'fas fa-exclamation';
+                
+                resultTitle.textContent = 'Error';
+                resultDescription.textContent = 'An error occurred while processing your voice sample.';
+                
+                confidenceValue.textContent = '0%';
+                confidenceCircle.style.setProperty('--confidence-percent', '0%');
+                
+                tipsContainer.innerHTML = '<div class="tip-card"><i class="fas fa-exclamation-triangle"></i><div class="tip-content"><h6>Try Again</h6><p>Please check your connection and try again.</p></div></div>';
+                
+                console.error('Server error:', errorData.error);
+                resultDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Network or server error:', error);
+            resultBadge.textContent = 'Error';
+            resultBadge.className = 'result-badge';
+            resultBadge.style.backgroundColor = 'rgba(255, 193, 7, 0.15)';
+            resultBadge.style.color = 'var(--warning-color)';
+            
+            resultIcon.className = 'result-icon';
+            resultIcon.style.backgroundColor = 'var(--warning-color)';
+            resultIcon.querySelector('i').className = 'fas fa-exclamation';
+            
+            resultTitle.textContent = 'Network Error';
+            resultDescription.textContent = 'A network error occurred. Please check your connection.';
+            
+            confidenceValue.textContent = '0%';
+            confidenceCircle.style.setProperty('--confidence-percent', '0%');
+            
+            tipsContainer.innerHTML = '<div class="tip-card"><i class="fas fa-wifi"></i><div class="tip-content"><h6>Connection Issue</h6><p>Please check your internet connection and try again.</p></div></div>';
+            
+            resultDiv.style.display = 'block';
+        } finally {
+            resetButton();
+        }
+    });
+    
+    function resetButton() {
+        submitBtn.disabled = false;
+        btnText.textContent = 'Test Voice';
+        btnSpinner.style.display = 'none';
+    }
+</script>
+</body>
+</html>
